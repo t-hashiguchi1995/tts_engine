@@ -7,7 +7,8 @@ COPY pyproject.toml uv.lock /app/
 COPY packages/tts_common /app/packages/tts_common
 COPY packages/gateway /app/packages/gateway
 
-RUN uv sync --package tts-gateway --extra gcp --no-dev --no-editable --frozen
+RUN uv sync --package tts-gateway --extra gcp --no-dev --no-editable --frozen \
+    && .venv/bin/python -c "import google.auth.transport.requests, google.oauth2.id_token"
 
 FROM python:3.11-slim-bookworm
 
