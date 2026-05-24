@@ -51,10 +51,10 @@ module "github_wif" {
 output "github_actions_secrets" {
   description = "Register in GitHub → Settings → Secrets and variables → Actions"
   value = {
-    PROJECT_ID   = var.project_id
-    WIF_PROVIDER = module.github_wif.wif_provider
-    WIF_SA_PLAN  = module.github_wif.plan_sa_email
-    WIF_SA_DEPLOY = module.github_wif.deploy_sa_email
+    PROJECT_ID      = var.project_id
+    WIF_PROVIDER    = module.github_wif.wif_provider
+    WIF_SA_PLAN     = module.github_wif.plan_sa_email
+    WIF_SA_DEPLOY   = module.github_wif.deploy_sa_email
     TF_STATE_BUCKET = local.tfstate_bucket
   }
 }

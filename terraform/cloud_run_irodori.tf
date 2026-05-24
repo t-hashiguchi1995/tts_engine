@@ -86,8 +86,8 @@ resource "google_cloud_run_v2_service" "irodori" {
 
     annotations = merge(
       {
-        "run.googleapis.com/cpu-throttling"      = "false"
-        "run.googleapis.com/startup-cpu-boost"   = "true"
+        "run.googleapis.com/cpu-throttling"    = "false"
+        "run.googleapis.com/startup-cpu-boost" = "true"
       },
       var.irodori_gpu_zonal_redundancy == "GPU_ZONAL_REDUNDANCY_DISABLED" ? {
         "run.googleapis.com/gpu-zonal-redundancy" = "false"

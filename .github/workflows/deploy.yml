@@ -21,7 +21,7 @@ jobs:
 
     env:
       PROJECT_ID: ${{ secrets.PROJECT_ID }}
-      GCP_REGION: ${{ vars.GCP_REGION || 'asia-northeast1' }}
+      GCP_REGION: ${{ vars.GCP_REGION || 'asia-southeast1' }}
       APP_NAME: ${{ vars.APP_NAME || 'tts-engine' }}
       TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
       HF_TOKEN_SECRET_ID: ${{ vars.HF_TOKEN_SECRET_ID }}
@@ -69,13 +69,15 @@ jobs:
             .
 
       - name: Scan gateway image (Trivy)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.31.0
         with:
           image-ref: ${{ steps.image.outputs.gateway_image }}
           format: table
           exit-code: "1"
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+          version: v0.69.3
+          version: v0.69.3
 
       - name: Terraform init
         working-directory: ${{ env.TF_WORKING_DIR }}
@@ -96,7 +98,7 @@ jobs:
           TF_VAR_hf_token_secret_id: ${{ env.HF_TOKEN_SECRET_ID }}
           TF_VAR_api_keys_secret_id: ${{ env.API_KEYS_SECRET_ID }}
           TF_VAR_require_api_keys: "true"
-          TF_VAR_manage_api_keys_secret: "true"
+          TF_VAR_manage_api_keys_secret: "false"
           TF_VAR_rate_limit_rpm: ${{ vars.RATE_LIMIT_RPM || '60' }}
           TF_VAR_max_upload_mb: ${{ vars.MAX_UPLOAD_MB || '25' }}
           TF_VAR_allowed_origins: ${{ vars.ALLOWED_ORIGINS || '' }}
