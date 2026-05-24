@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test:
+    needs: secret-scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup vendor/Irodori-TTS
+        run: |
+          if [[ ! -d vendor/Irodori-TTS/irodori_tts ]]; then
+            ./scripts/setup_vendor.sh
+          fi
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: uv sync --all-packages --dev
+
+      - name: Unit tests
+        run: |
+          uv run pytest packages/tts_common/tests packages/gateway/tests -q
+
+      - name: Import smoke (gateway / piper)
+        env:
+          REQUIRE_API_KEYS: "false"
+        run: |
+          uv run --package tts-gateway python -c "from gateway.main import create_app; create_app()"
+          uv run --package tts-piper-service python -c "from piper_service.main import create_app"

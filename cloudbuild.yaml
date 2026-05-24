@@ -1,0 +1,40 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - docker/gateway.Dockerfile
+      - -t
+      - ${_IMAGE_PREFIX}/gateway:${_TAG}
+      - .
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - docker/piper.Dockerfile
+      - -t
+      - ${_IMAGE_PREFIX}/piper:${_TAG}
+      - .
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - docker/irodori.Dockerfile
+      - -t
+      - ${_IMAGE_PREFIX}/irodori:${_TAG}
+      - .
+
+images:
+  - ${_IMAGE_PREFIX}/gateway:${_TAG}
+  - ${_IMAGE_PREFIX}/piper:${_TAG}
+  - ${_IMAGE_PREFIX}/irodori:${_TAG}
+
+substitutions:
+  _IMAGE_PREFIX: gcr.io/PROJECT_ID/tts-engine
+  _TAG: latest
+
+options:
+  machineType: E2_HIGHCPU_8
+  logging: CLOUD_LOGGING_ONLY
+  substitutionOption: ALLOW_LOOSE
+timeout: 3600s

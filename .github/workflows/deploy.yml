@@ -1,0 +1,107 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  TF_WORKING_DIR: terraform
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      PROJECT_ID: ${{ secrets.PROJECT_ID }}
+      GCP_REGION: ${{ vars.GCP_REGION || 'asia-northeast1' }}
+      APP_NAME: ${{ vars.APP_NAME || 'tts-engine' }}
+      TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+      HF_TOKEN_SECRET_ID: ${{ vars.HF_TOKEN_SECRET_ID }}
+      API_KEYS_SECRET_ID: ${{ vars.API_KEYS_SECRET_ID || 'tts-api-keys' }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Authenticate to Google Cloud (Workload Identity)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SA_DEPLOY }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Compute image coordinates
+        id: image
+        env:
+          SHORT_SHA: ${{ github.sha }}
+        run: |
+          PREFIX="${GCP_REGION}-docker.pkg.dev/${PROJECT_ID}/${APP_NAME}"
+          TAG="${SHORT_SHA:0:7}"
+          echo "prefix=${PREFIX}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "gateway_image=${PREFIX}/gateway:${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push images (Cloud Build)
+        env:
+          IMAGE_PREFIX: ${{ steps.image.outputs.prefix }}
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          gcloud builds submit \
+            --project="${PROJECT_ID}" \
+            --config=cloudbuild.yaml \
+            --substitutions="_IMAGE_PREFIX=${IMAGE_PREFIX},_TAG=${IMAGE_TAG}" \
+            .
+
+      - name: Scan gateway image (Trivy)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.image.outputs.gateway_image }}
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Terraform init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          BUCKET="${TF_STATE_BUCKET:-${PROJECT_ID}-tfstate}"
+          terraform init -input=false \
+            -backend-config="bucket=${BUCKET}" \
+            -backend-config="prefix=tts-engine"
+
+      - name: Terraform apply
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        env:
+          TF_VAR_project_id: ${{ env.PROJECT_ID }}
+          TF_VAR_region: ${{ env.GCP_REGION }}
+          TF_VAR_artifact_repo: ${{ env.APP_NAME }}
+          TF_VAR_image_prefix: ${{ steps.image.outputs.prefix }}
+          TF_VAR_image_tag: ${{ steps.image.outputs.tag }}
+          TF_VAR_hf_token_secret_id: ${{ env.HF_TOKEN_SECRET_ID }}
+          TF_VAR_api_keys_secret_id: ${{ env.API_KEYS_SECRET_ID }}
+          TF_VAR_require_api_keys: "true"
+          TF_VAR_manage_api_keys_secret: "true"
+          TF_VAR_rate_limit_rpm: ${{ vars.RATE_LIMIT_RPM || '60' }}
+          TF_VAR_max_upload_mb: ${{ vars.MAX_UPLOAD_MB || '25' }}
+          TF_VAR_allowed_origins: ${{ vars.ALLOWED_ORIGINS || '' }}
+        run: terraform apply -input=false -auto-approve
+
+      - name: Output gateway URL
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform output -raw gateway_url

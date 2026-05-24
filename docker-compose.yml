@@ -1,0 +1,73 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: docker/gateway.Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      PIPER_SERVICE_URL: http://piper:8080
+      IRODORI_SERVICE_URL: http://irodori:8080
+      INTERNAL_USE_IAM: "false"
+      REQUEST_TIMEOUT: "600"
+      REQUIRE_API_KEYS: ${REQUIRE_API_KEYS:-false}
+      API_KEYS: ${TTS_API_KEYS:-}
+      RATE_LIMIT_RPM: ${RATE_LIMIT_RPM:-0}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-25}
+    depends_on:
+      piper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  piper:
+    build:
+      context: .
+      dockerfile: docker/piper.Dockerfile
+    environment:
+      PIPER_MODEL: ${PIPER_MODEL:-ja_JP-tsukuyomi-chan-medium}
+      PIPER_MODELS_DIR: /models/piper
+      PIPER_DOWNLOAD_ON_START: "true"
+    volumes:
+      - piper_models:/models/piper
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s
+
+  irodori:
+    profiles: ["gpu"]
+    build:
+      context: .
+      dockerfile: docker/irodori.Dockerfile
+    environment:
+      IRODORI_MODEL_DEVICE: ${IRODORI_MODEL_DEVICE:-cuda}
+      IRODORI_CODEC_DEVICE: ${IRODORI_CODEC_DEVICE:-cuda}
+      IRODORI_MODEL_PRECISION: ${IRODORI_MODEL_PRECISION:-bf16}
+      HF_TOKEN: ${HF_TOKEN:-}
+      HF_HOME: /models/huggingface
+    volumes:
+      - irodori_cache:/models/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  piper_models:
+  irodori_cache:

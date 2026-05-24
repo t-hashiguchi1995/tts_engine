@@ -1,0 +1,29 @@
+project_id   = "thash-488104"  # 例
+region       = "asia-northeast1"
+artifact_repo = "tts-engine"
+# image_prefix = ""  # default: {region}-docker.pkg.dev/{project_id}/{artifact_repo}
+image_tag    = "latest"
+
+# piper_model = "ja_JP-tsukuyomi-chan-medium"
+
+# --- Security (production) ---
+require_api_keys              = true
+api_keys_secret_id            = "tts-api-keys"
+manage_api_keys_secret        = true
+allow_unauthenticated_gateway = true
+# gateway_invoker_members = ["serviceAccount:client@PROJECT.iam.gserviceaccount.com"]
+rate_limit_rpm = 60
+max_upload_mb  = 25
+# allowed_origins = "https://your-app.example.com"
+
+# DEV ONLY (do not use in production):
+# api_keys = "local-dev-key"
+
+# Irodori GPU (defaults tuned for Irodori-TTS-500M-v2 on Cloud Run L4)
+# irodori_gpu_type = "nvidia-l4"
+# irodori_cpu = 8
+# irodori_memory = "32Gi"
+# irodori_model_precision = "bf16"
+# irodori_codec_precision = "bf16"
+# irodori_min_instances = 1
+# hf_token_secret_id = "hf-token"

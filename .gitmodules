@@ -1,0 +1,4 @@
+[submodule "vendor/Irodori-TTS"]
+	path = vendor/Irodori-TTS
+	url = https://github.com/Aratako/Irodori-TTS.git
+	branch = v2

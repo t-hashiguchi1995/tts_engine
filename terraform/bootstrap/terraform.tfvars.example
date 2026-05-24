@@ -1,0 +1,6 @@
+project_id  = "thash-488104"  # 例: thash-488104
+region     = "asia-northeast1"
+github_org = "t-hashiguchi1995"
+github_repo = "tts_engine"
+app_name   = "tts-engine"
+# state_bucket_name = "your-gcp-project-id-tfstate"  # optional; default is {project_id}-tfstate
