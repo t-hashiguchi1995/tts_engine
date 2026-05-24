@@ -117,9 +117,10 @@ class IrodoriEngine:
         )
         result = runtime.synthesize(req)
         buffer = io.BytesIO()
+        audio = result.audio.squeeze(0).detach().float().cpu().numpy()
         sf.write(
             buffer,
-            result.audio.squeeze(0).cpu().numpy(),
+            audio,
             result.sample_rate,
             format="WAV",
         )
