@@ -10,6 +10,7 @@ from piper import PiperVoice
 from piper.download import download_model
 
 from piper_service.config import Settings
+from piper_service.piper_patch import apply_piper_speaker_embedding_patch
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,6 +52,7 @@ class PiperEngine:
                 )
         _LOGGER.info("Loading Piper model from %s", onnx_path)
         voice = PiperVoice.load(onnx_path, use_cuda=settings.use_cuda)
+        apply_piper_speaker_embedding_patch(voice)
         with self._lock:
             self._voice = voice
             self._model_path = Path(onnx_path)

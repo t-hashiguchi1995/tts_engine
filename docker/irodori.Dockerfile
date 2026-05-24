@@ -12,12 +12,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --no-cache-dir --upgrade pip uv
 
 WORKDIR /app
-COPY pyproject.toml /app/pyproject.toml
+COPY pyproject.toml uv.lock /app/
 COPY packages/tts_common /app/packages/tts_common
 COPY packages/irodori_service /app/packages/irodori_service
 COPY vendor/Irodori-TTS /app/vendor/Irodori-TTS
 
-RUN uv sync --package tts-irodori-service --no-dev
+RUN uv sync --package tts-irodori-service --no-dev --frozen
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV HOST=0.0.0.0
@@ -27,9 +27,13 @@ ENV IRODORI_CODEC_DEVICE=cuda
 ENV IRODORI_MODEL_PRECISION=bf16
 ENV HF_HOME=/models/huggingface
 
-RUN mkdir -p /models/huggingface && chown -R 1000:1000 /models
+RUN groupadd -g 1000 app && useradd -u 1000 -g app -d /models -s /usr/sbin/nologin app \
+    && mkdir -p /models/huggingface && chown -R app:app /models
 
-USER 1000
+ENV HOME=/models/huggingface
+ENV HF_HOME=/models/huggingface
+
+USER app
 
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=300s --retries=3 \
