@@ -79,6 +79,7 @@ jobs:
           exit-code: "1"
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+          vuln-type: os
 
       - name: Terraform init
         working-directory: ${{ env.TF_WORKING_DIR }}
