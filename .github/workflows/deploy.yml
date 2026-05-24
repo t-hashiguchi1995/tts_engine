@@ -68,15 +68,17 @@ jobs:
             --substitutions="_IMAGE_PREFIX=${IMAGE_PREFIX},_TAG=${IMAGE_TAG}" \
             .
 
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev" --quiet
+
       - name: Scan gateway image (Trivy)
-        uses: aquasecurity/trivy-action@0.31.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ steps.image.outputs.gateway_image }}
           format: table
           exit-code: "1"
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-          version: v0.69.3
 
       - name: Terraform init
         working-directory: ${{ env.TF_WORKING_DIR }}
