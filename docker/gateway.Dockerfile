@@ -1,7 +1,4 @@
-FROM python:3.11-slim-bookworm
-
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
+FROM python:3.11-slim-bookworm AS builder
 
 RUN pip install --no-cache-dir uv
 
@@ -11,6 +8,16 @@ COPY packages/tts_common /app/packages/tts_common
 COPY packages/gateway /app/packages/gateway
 
 RUN uv sync --package tts-gateway --extra gcp --no-dev
+
+FROM python:3.11-slim-bookworm
+
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY --from=builder /app/.venv /app/.venv
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV HOST=0.0.0.0
