@@ -3,11 +3,11 @@ FROM python:3.11-slim-bookworm AS builder
 RUN pip install --no-cache-dir uv
 
 WORKDIR /app
-COPY pyproject.toml /app/pyproject.toml
+COPY pyproject.toml uv.lock /app/
 COPY packages/tts_common /app/packages/tts_common
 COPY packages/gateway /app/packages/gateway
 
-RUN uv sync --package tts-gateway --extra gcp --no-dev --no-editable
+RUN uv sync --package tts-gateway --extra gcp --no-dev --no-editable --frozen
 
 FROM python:3.11-slim-bookworm
 
