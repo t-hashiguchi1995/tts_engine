@@ -3311,21 +3311,17 @@ version = "0.1.0"
 source = { editable = "packages/gateway" }
 dependencies = [
     { name = "fastapi" },
+    { name = "google-auth" },
     { name = "httpx" },
     { name = "python-multipart" },
     { name = "tts-common" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
-[package.optional-dependencies]
-gcp = [
-    { name = "google-auth" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
-    { name = "google-auth", marker = "extra == 'gcp'", specifier = ">=2.0" },
+    { name = "google-auth", specifier = ">=2.0" },
     { name = "httpx", specifier = ">=0.28" },
     { name = "python-multipart", specifier = ">=0.0.9" },
     { name = "tts-common", editable = "packages/tts_common" },
