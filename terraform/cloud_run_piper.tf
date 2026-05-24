@@ -1,7 +1,7 @@
 resource "google_cloud_run_v2_service" "piper" {
   name                = local.service_names.piper
   location            = var.region
-  ingress             = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+  ingress             = "INGRESS_TRAFFIC_ALL"
   deletion_protection = false
 
   template {
