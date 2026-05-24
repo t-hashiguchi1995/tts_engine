@@ -77,7 +77,6 @@ jobs:
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           version: v0.69.3
-          version: v0.69.3
 
       - name: Terraform init
         working-directory: ${{ env.TF_WORKING_DIR }}
