@@ -9,10 +9,11 @@ dependencies = [
     "uvicorn[standard]>=0.32",
     "python-multipart>=0.0.9",
     "httpx>=0.28",
+    "google-auth>=2.0",
 ]
 
 [project.optional-dependencies]
-gcp = ["google-auth>=2.0"]
+gcp = []
 
 [tool.uv.sources]
 tts-common = { workspace = true }
