@@ -62,10 +62,10 @@ resource "google_cloud_run_v2_service" "irodori" {
       dynamic "env" {
         for_each = local.irodori_hf_token_set ? { HF_TOKEN = var.hf_token_secret_id } : {}
         content {
-          name = each.key
+          name = env.key
           value_source {
             secret_key_ref {
-              secret  = each.value
+              secret  = env.value
               version = "latest"
             }
           }
