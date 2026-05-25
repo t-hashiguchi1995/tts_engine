@@ -89,24 +89,27 @@ variable "allowed_origins" {
 }
 
 variable "gateway_max_instances" {
-  type    = number
-  default = 20
+  description = "Max gateway instances (lower in dev to cap burst cost)"
+  type        = number
+  default     = 3
 }
 
 variable "piper_max_instances" {
-  type    = number
-  default = 10
+  description = "Max Piper instances (scale-to-zero when idle)"
+  type        = number
+  default     = 2
 }
 
 variable "irodori_min_instances" {
-  description = "Minimum GPU instances (1 recommended for production to avoid multi-minute cold starts)"
+  description = "Minimum GPU instances. Use 0 in dev (scale-to-zero; no idle GPU billing). Use 1 in production to avoid multi-minute cold starts."
   type        = number
-  default     = 1
+  default     = 0
 }
 
 variable "irodori_max_instances" {
-  type    = number
-  default = 3
+  description = "Max GPU instances (1 is enough for dev/test traffic)"
+  type        = number
+  default     = 1
 }
 
 variable "irodori_max_concurrency" {

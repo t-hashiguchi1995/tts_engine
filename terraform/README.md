@@ -53,7 +53,9 @@ gcloud builds submit --config=cloudbuild.yaml \
 | `irodori_gpu_type` | 既定 `nvidia-l4`（Irodori-TTS-500M-v2 向け） |
 | `irodori_cpu` / `irodori_memory` | 既定 `8` / `32Gi` |
 | `irodori_model_precision` | 既定 `bf16` |
-| `irodori_min_instances` | 既定 `1`（GPU コールドスタート対策） |
+| `irodori_min_instances` | 既定 `0`（開発: アイドル時 GPU 課金なし）。本番でコールドスタート回避する場合は `1` |
+| `irodori_max_instances` | 既定 `1`（開発向け上限） |
+| `gateway_max_instances` / `piper_max_instances` | 既定 `3` / `2` |
 | `hf_token_secret_id` | HF トークン Secret のリソース名 |
 
 ## 出力

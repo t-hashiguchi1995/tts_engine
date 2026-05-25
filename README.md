@@ -162,7 +162,7 @@ terraform apply
 | piper | 2 | 4Gi | — | 内部のみ |
 | irodori | 8 | 32Gi | **NVIDIA L4** ×1 | 内部のみ |
 
-**Irodori** は 500M モデル + DACVAE 向けに **L4（24GB VRAM）・8 vCPU・32GiB・bf16・min_instances=1** を既定にしています。
+**Irodori** は 500M モデル + DACVAE 向けに **L4（24GB VRAM）・8 vCPU・32GiB・bf16** を既定にしています。開発向けに **`min_instances=0`**（アイドル時は GPU インスタンスなし・課金なし）です。初回リクエストはコールドスタートで 1〜3 分かかることがあります。本番で常時応答が必要なら `irodori_min_instances = 1` を `terraform.tfvars` に設定してください。
 
 - ゲートウェイ SA が Piper / Irodori を `roles/run.invoker` で呼び出し（`INTERNAL_USE_IAM=true`）
 - Irodori は CPU スロットリング無効 + 起動時 CPU ブースト

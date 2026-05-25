@@ -25,5 +25,9 @@ max_upload_mb  = 25
 # irodori_memory = "32Gi"
 # irodori_model_precision = "bf16"
 # irodori_codec_precision = "bf16"
+# Dev (default): scale GPU to zero when idle — no 24/7 L4 charge
+# irodori_min_instances = 0
+# irodori_max_instances = 1
+# Production (optional): keep one warm GPU to avoid cold starts
 # irodori_min_instances = 1
 # hf_token_secret_id = "hf-token"
